@@ -1,0 +1,12 @@
+
+[server]
+port = 9000
+
+[database]
+uri = "localhost:27017"
+dbname = "govideo"
+
+[app]
+paths = [
+    "/Users/sickyoon/Downloads/"
+]
