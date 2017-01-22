@@ -19,6 +19,11 @@ func (a *App) login(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	t.Execute(w, nil)
 }
 
+func (a *App) loginPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// parse post login arguments
+	a.auth.SetUser()
+}
+
 func (a *App) logout(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// TODO
 }

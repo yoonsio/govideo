@@ -9,6 +9,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+const (
+	colMedia = "media"
+	colUser  = "users"
+)
+
 // MongoClient holds master session and other db-related info
 type MongoClient struct {
 	session *mgo.Session // master session
@@ -34,10 +39,27 @@ func (mc *MongoClient) GetSession() *mgo.Session {
 	return mc.session.Copy()
 }
 
+// CRUD
+
+// CreateUser -
+func (mc *MongoClient) CreateUser(user *models.User) error {
+	s := mc.GetSession()
+	err := s.DB(mc.dbName).C(colUser).Insert(user)
+	s.Close()
+	return err
+}
+
+// GetUser -
+func (mc *MongoClient) GetUser(username, hash string) (*models.User, error) {
+	s := mc.GetSession()
+	s.Close()
+	return nil, nil
+}
+
 // InsertMedia -
 func (mc *MongoClient) InsertMedia(media *models.Media) error {
 	s := mc.GetSession()
-	err := s.DB(mc.dbName).C("media").Insert(media)
+	err := s.DB(mc.dbName).C(colMedia).Insert(media)
 	s.Close()
 	return err
 }
@@ -46,7 +68,7 @@ func (mc *MongoClient) InsertMedia(media *models.Media) error {
 func (mc *MongoClient) FindMedia(mediaID string) (*models.Media, error) {
 	s := mc.GetSession()
 	var media models.Media
-	err := s.DB(mc.dbName).C("media").Find(mediaID).One(&media)
+	err := s.DB(mc.dbName).C(colMedia).Find(mediaID).One(&media)
 	s.Close()
 	return &media, err
 }
@@ -54,7 +76,7 @@ func (mc *MongoClient) FindMedia(mediaID string) (*models.Media, error) {
 // UpdateMedia -
 func (mc *MongoClient) UpdateMedia(media *models.Media) error {
 	s := mc.GetSession()
-	err := s.DB(mc.dbName).C("media").Update(
+	err := s.DB(mc.dbName).C(colMedia).Update(
 		bson.M{"_id": media.ID},
 		bson.M{"name": media.Name},
 	)

@@ -7,7 +7,10 @@ import (
 	"strconv"
 
 	"github.com/burntsushi/toml"
+	"github.com/coocood/freecache"
 	"github.com/gorilla/handlers"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sickyoon/govideo/govideo/models"
 )
@@ -18,7 +21,10 @@ type App struct {
 	*httprouter.Router
 	handlers http.Handler
 	config   models.Config
+	auth     *AuthClient
 	db       *MongoClient
+	cache    *freecache.Cache
+	store    *sessions.CookieStore
 }
 
 // NewApp creates new web application
@@ -40,6 +46,21 @@ func NewApp(configFile string) *App {
 
 	// establish db connection
 	app.db = NewMongoClient(app.config.Database.URI, app.config.Database.DBName)
+
+	// establish in-memory cache
+	app.cache = freecache.NewCache(app.config.App.CacheSize)
+
+	// create session store
+	app.store = sessions.NewCookieStore(securecookie.GenerateRandomKey(64))
+	app.store.Options = &sessions.Options{
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false,     // only over SSL - set 'true' for production
+		MaxAge:   86400 * 7, // one week
+	}
+
+	// create auth client
+	app.auth = NewAuthClient(app.store, app.db)
 
 	// TODO: add handlers
 

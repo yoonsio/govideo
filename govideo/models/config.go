@@ -21,5 +21,6 @@ type DatabaseConfig struct {
 
 // AppConfig holds application-specific configurations
 type AppConfig struct {
-	Paths []string // directories to load media from
+	Paths     []string // directories to load media from
+	CacheSize int      // cache size in bytes (1024 * 1024 = 1 MB)
 }

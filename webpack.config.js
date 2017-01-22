@@ -13,7 +13,10 @@ var app = {
         filename: '[name].js'
     },
     resolve: {
-        extensions: ['', '.js', '.jsx']
+        extensions: ['', '.js', '.jsx'],
+        root: [
+            path.resolve('./src/jsx')
+        ]
     },
     plugins: [
         //new webpack.optimize.OccurenceOrderPlugin(),
