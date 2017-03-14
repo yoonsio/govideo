@@ -4,6 +4,7 @@ package models
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
+	Cache    CacheConfig
 	App      AppConfig
 }
 
@@ -23,4 +24,12 @@ type DatabaseConfig struct {
 type AppConfig struct {
 	Paths     []string // directories to load media from
 	CacheSize int      // cache size in bytes (1024 * 1024 = 1 MB)
+}
+
+// CacheConfig holds redis cache configuration
+type CacheConfig struct {
+	URI      string
+	Password string
+	Database string
+	Expiry   string
 }

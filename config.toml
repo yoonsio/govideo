@@ -6,6 +6,12 @@ port = 9000
 uri = "localhost:27017"
 dbname = "govideo"
 
+[cache]
+uri = "localhost:6379"
+password = ""
+database = "0"
+expiry = "10"
+
 [app]
 paths = [
     "/Users/sickyoon/Downloads/"

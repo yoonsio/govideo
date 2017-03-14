@@ -8,6 +8,13 @@ Fast open-source video streaming server written in Go
 * access control
 * speed limit
 
+# Generate protobuf sources
+
+```
+go get github.com/gogo/protobuf/protoc-gen-gogoslick
+protoc --gogoslick_out=. user.proto
+```
+
 ## Resources
 
 * https://github.com/gaearon/react-hot-boilerplate

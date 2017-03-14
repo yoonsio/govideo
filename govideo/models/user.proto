@@ -1,0 +1,14 @@
+syntax = 'proto3';
+package models;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+
+message User {
+    string email = 1;
+    string first_name = 2;
+    string last_name = 3;
+    bytes hash = 4;
+}
+

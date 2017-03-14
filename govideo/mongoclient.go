@@ -49,11 +49,16 @@ func (mc *MongoClient) CreateUser(user *models.User) error {
 	return err
 }
 
-// GetUser -
-func (mc *MongoClient) GetUser(username, hash string) (*models.User, error) {
+// GetUserFromDB -
+func (mc *MongoClient) GetUserFromDB(email, hash string) (*models.User, error) {
 	s := mc.GetSession()
+	user := models.User{}
+	err := s.DB(mc.dbName).C(colUser).Find(bson.M{"email": email, "password": hash}).One(&user)
+	if err != nil {
+		return nil, err
+	}
 	s.Close()
-	return nil, nil
+	return &user, nil
 }
 
 // InsertMedia -

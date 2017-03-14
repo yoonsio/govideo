@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/burntsushi/toml"
-	"github.com/coocood/freecache"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
@@ -21,9 +20,9 @@ type App struct {
 	*httprouter.Router
 	handlers http.Handler
 	config   models.Config
-	auth     *AuthClient
 	db       *MongoClient
-	cache    *freecache.Cache
+	auth     *AuthClient
+	cache    *RedisClient
 	store    *sessions.CookieStore
 }
 
@@ -31,6 +30,7 @@ type App struct {
 func NewApp(configFile string) *App {
 
 	log.Printf("Initializing web application with " + configFile)
+	var err error
 
 	// initialize app
 	app := App{
@@ -47,8 +47,11 @@ func NewApp(configFile string) *App {
 	// establish db connection
 	app.db = NewMongoClient(app.config.Database.URI, app.config.Database.DBName)
 
-	// establish in-memory cache
-	app.cache = freecache.NewCache(app.config.App.CacheSize)
+	// establish redis connection
+	app.cache, err = NewRedisClient(&app.config)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	// create session store
 	app.store = sessions.NewCookieStore(securecookie.GenerateRandomKey(64))
@@ -60,11 +63,14 @@ func NewApp(configFile string) *App {
 	}
 
 	// create auth client
-	app.auth = NewAuthClient(app.store, app.db)
+	app.auth = NewAuthClient(app.store, app.db, app.cache)
 
 	// TODO: add handlers
 
 	app.GET("/", app.index)
+	app.POST("/login", app.loginPost)
+	app.GET("/logout", app.logout)
+	app.GET("/curuser", app.curUser)
 
 	// TODO: list returns json list of all available media
 	// in paths specified in configuration file

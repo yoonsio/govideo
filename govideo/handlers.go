@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gogo/protobuf/jsonpb"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -14,18 +15,54 @@ func (a *App) index(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 	t.Execute(w, nil)
 }
 
-func (a *App) login(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	t := template.Must(template.ParseFiles("templates/login.html"))
-	t.Execute(w, nil)
-}
-
 func (a *App) loginPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// parse post login arguments
-	a.auth.SetUser()
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	username := r.Form.Get("username")
+	password := r.Form.Get("password")
+	user, err := a.auth.Authenticate(w, r, username, password)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	marshaller := jsonpb.Marshaler{
+		EmitDefaults: false,
+		OrigName:     true,
+	}
+	err = marshaller.Marshal(w, user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (a *App) logout(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO
+	err := a.auth.ClearUser(w, r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write([]byte("OK"))
+}
+
+func (a *App) curUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	user, err := a.auth.CurUser(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNoContent)
+		return
+	}
+	marshaller := jsonpb.Marshaler{
+		EmitDefaults: false,
+		OrigName:     true,
+	}
+	err = marshaller.Marshal(w, user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 // list returns json list of all available media
