@@ -24,3 +24,5 @@ _testmain.go
 *.prof
 
 /node_modules/
+static/js/common.js
+static/js/index.js
