@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/julienschmidt/httprouter"
@@ -18,7 +19,7 @@ func (a *App) index(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 func (a *App) loginPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	err := r.ParseForm()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	username := r.Form.Get("username")
@@ -63,6 +64,16 @@ func (a *App) curUser(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func serveFile(w http.ResponseWriter, r *http.Request, filepath string) error {
+	fi, err := os.Open(filepath)
+	if err != nil {
+		return err
+	}
+	defer fi.Close()
+	http.ServeContent(w, r, "", time.Time{}, fi)
+	return nil
 }
 
 // list returns json list of all available media

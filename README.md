@@ -6,7 +6,15 @@ Fast open-source video streaming server written in Go
 
 * authentication
 * access control
-* speed limit
+* speed limiter
+
+# Run Instruction
+
+## Run Web Server
+`go run main.go run`
+
+## Database Seed
+`go run main.go seed`
 
 # Generate protobuf sources
 

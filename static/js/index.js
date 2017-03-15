@@ -36279,6 +36279,10 @@ webpackJsonp([0,1],[
 	    value: true
 	});
 
+	var _defineProperty2 = __webpack_require__(622);
+
+	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
+
 	var _getPrototypeOf = __webpack_require__(532);
 
 	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
@@ -36307,30 +36311,81 @@ webpackJsonp([0,1],[
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var LoginForm = _react2.default.createClass({
-	    displayName: 'LoginForm',
-	    render: function render() {
-	        return _react2.default.createElement(
-	            'form',
-	            { id: 'loginForm' },
-	            _react2.default.createElement(
-	                'h2',
-	                null,
-	                'Login'
-	            ),
-	            _react2.default.createElement('input', { id: 'login_username', name: 'username', type: 'email', placeholder: 'Email', required: true }),
-	            _react2.default.createElement('input', { id: 'login_password', name: 'password', type: 'password', placeholder: 'Password', required: true }),
-	            _react2.default.createElement(
-	                'button',
-	                { id: 'signin-btn', 'class': 'btn btn-primary btn-sm' },
-	                'SIGN IN'
-	            )
-	        );
-	    }
-	});
+	var LoginForm = function (_React$Component) {
+	    (0, _inherits3.default)(LoginForm, _React$Component);
 
-	var LoginPage = function (_React$Component) {
-	    (0, _inherits3.default)(LoginPage, _React$Component);
+	    function LoginForm(props) {
+	        (0, _classCallCheck3.default)(this, LoginForm);
+
+	        var _this = (0, _possibleConstructorReturn3.default)(this, (LoginForm.__proto__ || (0, _getPrototypeOf2.default)(LoginForm)).call(this, props));
+
+	        _this.login = function (e) {
+	            // TODO: some validation
+	            e.preventDefault();
+	            console.log('triggering login with ' + _this.state.username + ', ' + _this.state.password);
+	            var form = new FormData();
+	            form.append('username', _this.state.username);
+	            form.append('password', _this.state.password);
+	            var request = new Request('/login', {
+	                method: 'post',
+	                body: form,
+	                credentials: 'same-origin',
+	                mode: 'cors',
+	                redirect: 'follow',
+	                cache: 'no-cache',
+	                headers: new Headers({
+	                    'Content-Type': 'text/plain'
+	                })
+	            });
+	            fetch(request).then(function (response) {
+	                // perform setState here
+	                console.log('status: ' + response.status);
+	                return response.json();
+	            }).then(function (j) {
+	                console.log('json: ' + j);
+	            }).catch(function (err) {
+	                // error
+	                console.log(err);
+	            });
+	        };
+
+	        _this.onChange = function (e) {
+	            _this.setState((0, _defineProperty3.default)({}, e.target.name, e.target.value));
+	        };
+
+	        _this.state = {
+	            username: '',
+	            password: ''
+	        };
+	        return _this;
+	    }
+
+	    (0, _createClass3.default)(LoginForm, [{
+	        key: 'render',
+	        value: function render() {
+	            return _react2.default.createElement(
+	                'form',
+	                { id: 'loginForm' },
+	                _react2.default.createElement(
+	                    'h2',
+	                    null,
+	                    'Login'
+	                ),
+	                _react2.default.createElement('input', { id: 'login_username', name: 'username', type: 'email', value: this.props.username, onChange: this.onChange, placeholder: 'Email', required: true }),
+	                _react2.default.createElement('input', { id: 'login_password', name: 'password', type: 'password', value: this.props.password, onChange: this.onChange, placeholder: 'Password', required: true }),
+	                _react2.default.createElement(
+	                    'button',
+	                    { id: 'signin-btn', className: 'btn btn-primary btn-sm', onClick: this.login },
+	                    'SIGN IN'
+	                )
+	            );
+	        }
+	    }]);
+	    return LoginForm;
+	}(_react2.default.Component);
+
+	var LoginPage = function (_React$Component2) {
+	    (0, _inherits3.default)(LoginPage, _React$Component2);
 
 	    function LoginPage() {
 	        (0, _classCallCheck3.default)(this, LoginPage);
@@ -36351,6 +36406,35 @@ webpackJsonp([0,1],[
 	}(_react2.default.Component);
 
 	exports.default = LoginPage;
+
+/***/ },
+/* 622 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	exports.__esModule = true;
+
+	var _defineProperty = __webpack_require__(560);
+
+	var _defineProperty2 = _interopRequireDefault(_defineProperty);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	exports.default = function (obj, key, value) {
+	  if (key in obj) {
+	    (0, _defineProperty2.default)(obj, key, {
+	      value: value,
+	      enumerable: true,
+	      configurable: true,
+	      writable: true
+	    });
+	  } else {
+	    obj[key] = value;
+	  }
+
+	  return obj;
+	};
 
 /***/ }
 ]);

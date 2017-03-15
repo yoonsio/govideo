@@ -85,8 +85,8 @@ func NewApp(configFile string) *App {
 
 	// add middlewares
 	h := handlers.LoggingHandler(os.Stdout, app)
-	h = handlers.ProxyHeaders(h)
-	h = handlers.CompressHandler(h)
+	//h = handlers.ProxyHeaders(h)
+	//h = handlers.CompressHandler(h)
 	h = handlers.RecoveryHandler()(h)
 	app.handlers = h
 

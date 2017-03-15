@@ -4,14 +4,12 @@ import (
 	"flag"
 	"runtime"
 
-	"github.com/sickyoon/govideo/govideo"
+	"github.com/sickyoon/govideo/cmd"
 )
 
 var config = flag.String("config", "config.toml", "configuration file")
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	flag.Parse()
-	app := govideo.NewApp(*config)
-	app.Run()
+	cmd.Execute()
 }
