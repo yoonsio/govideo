@@ -50,10 +50,10 @@ func (mc *MongoClient) CreateUser(user *models.User) error {
 }
 
 // GetUserFromDB -
-func (mc *MongoClient) GetUserFromDB(email, hash string) (*models.User, error) {
+func (mc *MongoClient) GetUserFromDB(email string, hash []byte) (*models.User, error) {
 	s := mc.GetSession()
 	user := models.User{}
-	err := s.DB(mc.dbName).C(colUser).Find(bson.M{"email": email, "password": hash}).One(&user)
+	err := s.DB(mc.dbName).C(colUser).Find(bson.M{"email": email, "hash": hash}).One(&user)
 	if err != nil {
 		return nil, err
 	}

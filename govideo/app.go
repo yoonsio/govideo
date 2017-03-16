@@ -93,12 +93,28 @@ func NewApp(configFile string) *App {
 	return &app
 }
 
-// Run -
+// Run starts server
 func (a *App) Run() {
 	log.Printf("Running server at port " + strconv.Itoa(a.config.Server.Port))
 	log.Fatal(
 		http.ListenAndServe(":"+strconv.Itoa(a.config.Server.Port), a.handlers),
 	)
+}
+
+// Seed seeds database
+func (a *App) Seed() error {
+	log.Println("Creating test user")
+	err := a.db.CreateUser(&models.User{
+		Email:     "john@doe.com",
+		FirstName: "John",
+		LastName:  "Doe",
+		Hash:      []byte("password"),
+	})
+	if err != nil {
+		return err
+	}
+	log.Println("test user successfully created")
+	return nil
 }
 
 type fileOnlyFs struct {

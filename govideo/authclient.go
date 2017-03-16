@@ -98,7 +98,8 @@ func (ac *AuthClient) ClearUser(w http.ResponseWriter, r *http.Request) error {
 // Validate authenticates user against database
 func (ac *AuthClient) validate(email, password string) (*models.User, error) {
 	// TODO: validate email/password
-	return ac.GetUserFromDB(email, password)
+	// TODO: hash password
+	return ac.GetUserFromDB(email, []byte(password))
 }
 
 func (ac *AuthClient) setCache(user *models.User) ([]byte, error) {

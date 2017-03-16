@@ -26,16 +26,17 @@ export default class LoginForm extends React.Component {
       mode: 'cors',
       redirect: 'follow',
       cache: 'no-cache',
-      headers: new Headers({
-        'Content-Type': 'text/plain'
-      })
+      header: {
+        Accept: 'application/json, application/xml, text/plain, text/html, *.*',
+        'Content-Type': 'multipart/form-data;',
+      },
     });
     fetch(request).then((response) => {
       // perform setState here
-      console.log('status: ' + response.status);
+      console.log(`status: ${response.status}`);
       return response.json();
     }).then((j) => {
-      console.log('json: ' + j);
+      console.log(`json: ${j}`);
     }).catch((err) => {
       // error
       console.log(err);

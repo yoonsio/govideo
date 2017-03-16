@@ -1,9 +1,11 @@
 package cmd
 
 import (
-	"fmt"
+	"log"
 
+	"github.com/sickyoon/govideo/govideo"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // seedCmd represents the seed command
@@ -15,9 +17,13 @@ var seedCmd = &cobra.Command{
 * create user
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: drop database
-		// TODO: add database seed
-		fmt.Println("Seeding database...")
+		log.Println("Seeding started...")
+		config := viper.GetString("config")
+		app := govideo.NewApp(config)
+		err := app.Seed()
+		if err != nil {
+			panic(err)
+		}
 	},
 }
 

@@ -17,13 +17,17 @@ func (a *App) index(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 }
 
 func (a *App) loginPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	err := r.ParseForm()
+
+	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	// TODO: validate empty values
 	username := r.Form.Get("username")
 	password := r.Form.Get("password")
+
 	user, err := a.auth.Authenticate(w, r, username, password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
