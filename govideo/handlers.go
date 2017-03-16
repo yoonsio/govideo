@@ -30,6 +30,8 @@ func (a *App) loginPost(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 
 	user, err := a.auth.Authenticate(w, r, username, password)
 	if err != nil {
+		// Clean up
+		a.auth.ClearUser(w, r)
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
@@ -53,7 +55,7 @@ func (a *App) logout(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 	w.Write([]byte("OK"))
 }
 
-func (a *App) curUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (a *App) curUser(w http.ResponseWriter, r *http.Request) {
 	user, err := a.auth.CurUser(r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNoContent)

@@ -1,6 +1,7 @@
 package govideo
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -10,8 +11,8 @@ import (
 // RedisClient -
 type RedisClient struct {
 	*redis.Pool
-	secret string
-	expiry string
+	secret     string
+	userExpiry int
 }
 
 // NewRedisClient -
@@ -44,8 +45,8 @@ func NewRedisClient(config *models.Config) (*RedisClient, error) {
 				return c, nil
 			},
 		},
-		secret: secret,
-		expiry: config.Cache.Expiry,
+		secret:     secret,
+		userExpiry: config.App.UserExpiry,
 	}, nil
 }
 
@@ -54,7 +55,7 @@ func (rc *RedisClient) SetAuthCache(userID string, data []byte) ([]byte, error) 
 	conn := rc.Get()
 	defer conn.Close()
 	key := []byte(rc.secret + ":user:" + userID)
-	_, err := conn.Do("SETEX", key, rc.expiry, data)
+	_, err := conn.Do("SETEX", key, strconv.Itoa(rc.userExpiry), data)
 	return key, err
 }
 

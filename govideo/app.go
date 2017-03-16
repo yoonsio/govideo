@@ -58,19 +58,20 @@ func NewApp(configFile string) *App {
 	app.store.Options = &sessions.Options{
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false,     // only over SSL - set 'true' for production
-		MaxAge:   86400 * 7, // one week
+		Secure:   false, // only over SSL - set 'true' for production
+		MaxAge:   app.config.App.UserExpiry,
 	}
 
 	// create auth client
 	app.auth = NewAuthClient(app.store, app.db, app.cache)
 
-	// TODO: add handlers
-
+	// add handlers
 	app.GET("/", app.index)
+	app.GET("/login", app.index)
 	app.POST("/login", app.loginPost)
 	app.GET("/logout", app.logout)
-	app.GET("/curuser", app.curUser)
+
+	app.Handler("GET", "/curuser", app.auth.Middleware(http.HandlerFunc(app.curUser)))
 
 	// TODO: list returns json list of all available media
 	// in paths specified in configuration file
@@ -85,8 +86,8 @@ func NewApp(configFile string) *App {
 
 	// add middlewares
 	h := handlers.LoggingHandler(os.Stdout, app)
-	//h = handlers.ProxyHeaders(h)
-	//h = handlers.CompressHandler(h)
+	h = handlers.ProxyHeaders(h)
+	h = handlers.CompressHandler(h)
 	h = handlers.RecoveryHandler()(h)
 	app.handlers = h
 

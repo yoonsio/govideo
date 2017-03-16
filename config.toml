@@ -10,10 +10,9 @@ dbname = "govideo"
 uri = "localhost:6379"
 password = ""
 database = "0"
-expiry = "10"
 
 [app]
 paths = [
     "/Users/sickyoon/Downloads/"
 ]
-cachesize = 104857600 # 1024 * 1024 = 1MB
+user_expiry = 86400 # one day

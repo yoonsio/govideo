@@ -8,20 +8,38 @@ Fast open-source video streaming server written in Go
 * access control
 * speed limiter
 
-# Run Instruction
+## Run Instruction
 
-## Run Web Server
-`go run main.go run`
+### Run Web Server
+```
+go run main.go run
+```
 
-## Database Seed
-`go run main.go seed`
+### Seed Database
+```
+go run main.go seed
+```
 
-# Generate protobuf sources
+## Compilation
+
+### Generate protobuf sources
 
 ```
 go get github.com/gogo/protobuf/protoc-gen-gogoslick
 protoc --gogoslick_out=. user.proto
 ```
+
+### Webpack
+
+```
+webpack --progress --color
+```
+
+## TODO
+
+### Security: User Session Expiry based on activity
+User session in redis can be expired based on activity.
+Set redis expiry to low value and update it whenever a request is made by the same user.
 
 ## Resources
 

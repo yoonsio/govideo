@@ -3,6 +3,7 @@ package govideo
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -36,12 +37,13 @@ func NewAuthClient(store *sessions.CookieStore, db *MongoClient, cache *RedisCli
 	}
 }
 
-// AuthMiddleware for authentication
-func (ac AuthClient) AuthMiddleware(h http.Handler) http.Handler {
+// Middleware for authentication
+func (ac AuthClient) Middleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user, err := ac.CurUser(r)
 		if err != nil {
-			ac.Redirect(w, r)
+			//ac.Redirect(w, r)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 		ctx := context.WithValue(r.Context(), ac.contextKey, user)
@@ -137,16 +139,21 @@ func (ac *AuthClient) clearCache(key []byte) error {
 
 func (ac *AuthClient) setSession(w http.ResponseWriter, r *http.Request, user []byte) error {
 	session, err := ac.Get(r, ac.cookieKey)
-	if err != nil {
+	if session == nil && err != nil {
+		// It should ALWAYS return new session in case of error!
+		log.Println("FATAL: Should ALWAYS return new session in case of failure")
 		return err
 	}
+	log.Println("got session")
 	session.Values[ac.sessionKey] = user
 	return session.Save(r, w)
 }
 
 func (ac *AuthClient) clearSession(w http.ResponseWriter, r *http.Request) error {
 	session, err := ac.Get(r, ac.cookieKey)
-	if err != nil {
+	if session == nil && err != nil {
+		// It should ALWAYS return new session in case of error!
+		log.Println("FATAL: Should ALWAYS return new session in case of failure")
 		return err
 	}
 	if _, ok := session.Values[ac.sessionKey]; ok {
@@ -157,8 +164,10 @@ func (ac *AuthClient) clearSession(w http.ResponseWriter, r *http.Request) error
 
 func (ac *AuthClient) getSession(r *http.Request) ([]byte, error) {
 	session, err := ac.Get(r, ac.cookieKey)
-	if err != nil {
-		return nil, nil
+	if session == nil && err != nil {
+		// It should ALWAYS return new session in case of error!
+		log.Println("FATAL: Should ALWAYS return new session in case of failure")
+		return nil, err
 	}
 	userData, ok := session.Values[ac.sessionKey]
 	if !ok {
