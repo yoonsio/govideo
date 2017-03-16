@@ -1,2 +1,7 @@
-export Sidebar from './Sidebar'
-export Content from './Content'
+import Sidebar from './Sidebar';
+import Content from './Content';
+import LoginForm from './LoginForm';
+
+exports.Sidebar = Sidebar;
+exports.Content = Content;
+exports.LoginForm = LoginForm;
