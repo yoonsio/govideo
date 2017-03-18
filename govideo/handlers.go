@@ -9,6 +9,8 @@ import (
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/julienschmidt/httprouter"
+	"github.com/mailru/easyjson"
+	"github.com/sickyoon/govideo/govideo/models"
 )
 
 func (a *App) index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -20,7 +22,7 @@ func (a *App) loginPost(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		ErrorHandler(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -32,7 +34,7 @@ func (a *App) loginPost(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	if err != nil {
 		// Clean up
 		a.auth.ClearUser(w, r)
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		ErrorHandler(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 	marshaller := jsonpb.Marshaler{
@@ -41,7 +43,7 @@ func (a *App) loginPost(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	}
 	err = marshaller.Marshal(w, user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -49,16 +51,21 @@ func (a *App) loginPost(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 func (a *App) logout(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	err := a.auth.ClearUser(w, r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Write([]byte("OK"))
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	response := models.GetSuccessResponse()
+	response.Msg = "OK"
+	easyjson.MarshalToHTTPResponseWriter(response, w)
+	models.RecycleSuccessResponse(response)
 }
 
 func (a *App) curUser(w http.ResponseWriter, r *http.Request) {
 	user, err := a.auth.CurUser(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNoContent)
+		ErrorHandler(w, err.Error(), http.StatusNoContent)
 		return
 	}
 	marshaller := jsonpb.Marshaler{
@@ -67,7 +74,7 @@ func (a *App) curUser(w http.ResponseWriter, r *http.Request) {
 	}
 	err = marshaller.Marshal(w, user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }

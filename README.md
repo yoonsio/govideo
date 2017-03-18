@@ -22,11 +22,13 @@ go run main.go seed
 
 ## Compilation
 
-### Generate protobuf sources
+### Generate protobuf & easyjson sources
 
 ```
+cd ./govideo/models
 go get github.com/gogo/protobuf/protoc-gen-gogoslick
 protoc --gogoslick_out=. user.proto
+easyjson -all error.go
 ```
 
 ### Webpack

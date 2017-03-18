@@ -1,0 +1,14 @@
+
+.navbar-right-menu {
+  float: left;
+  color: white;
+  padding: 12px 15px;
+  font-size: 13px;
+  line-height: 21px;
+  height: 45px;
+}
+
+.navbar-brand {
+  width: 200px !important;
+}
+

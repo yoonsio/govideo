@@ -5,7 +5,7 @@ var app = {
     entry: {
         index: [
             'babel-polyfill',
-            path.resolve(__dirname, 'src/jsx/App'),
+            path.resolve(__dirname, 'src/jsx/index.jsx'),
         ],
     },
     output: {

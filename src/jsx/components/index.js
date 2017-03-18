@@ -1,7 +1,7 @@
-import Sidebar from './Sidebar';
+import Navbar from './Navbar';
 import Content from './Content';
 import LoginForm from './LoginForm';
 
-exports.Sidebar = Sidebar;
+exports.Navbar = Navbar;
 exports.Content = Content;
 exports.LoginForm = LoginForm;

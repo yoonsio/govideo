@@ -1,6 +1,8 @@
 import React from 'react';
+import { connect } from 'react-redux';
+import { loginUser } from '../helpers/userReq';
 
-export default class LoginForm extends React.Component {
+class LoginForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -16,31 +18,7 @@ export default class LoginForm extends React.Component {
   login = (e) => {
     // TODO: some validation
     e.preventDefault();
-    const form = new FormData();
-    form.append('username', this.state.username);
-    form.append('password', this.state.password);
-    const request = new Request('/login', {
-      method: 'post',
-      body: form,
-      credentials: 'same-origin',
-      mode: 'cors',
-      redirect: 'follow',
-      cache: 'no-cache',
-      header: {
-        Accept: 'application/json, application/xml, text/plain, text/html, *.*',
-        'Content-Type': 'multipart/form-data;',
-      },
-    });
-    fetch(request).then((response) => {
-      // perform setState here
-      console.log(`status: ${response.status}`);
-      return response.json();
-    }).then((j) => {
-      console.log(`json: ${j}`);
-    }).catch((err) => {
-      // error
-      console.log(err);
-    });
+    loginUser(this.props, this.state.username, this.state.password);
   }
 
   render() {
@@ -54,3 +32,10 @@ export default class LoginForm extends React.Component {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  user: state.user,
+});
+
+const ConnectedLoginForm = connect(mapStateToProps)(LoginForm);
+export default ConnectedLoginForm;

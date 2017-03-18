@@ -43,7 +43,7 @@ func (ac AuthClient) Middleware(h http.Handler) http.Handler {
 		user, err := ac.CurUser(r)
 		if err != nil {
 			//ac.Redirect(w, r)
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			ErrorHandler(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 		ctx := context.WithValue(r.Context(), ac.contextKey, user)

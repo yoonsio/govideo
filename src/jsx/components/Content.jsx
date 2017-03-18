@@ -1,9 +1,9 @@
 import React from 'react';
-import Sidebar from './Sidebar';
+import Navbar from './Navbar';
 
 const Content = ({ children }) => (
   <div>
-    <Sidebar />
+    <Navbar />
     <div className="main container-fluid">
       {children}
     </div>

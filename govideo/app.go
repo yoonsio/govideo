@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
+	"github.com/mailru/easyjson"
 	"github.com/sickyoon/govideo/govideo/models"
 )
 
@@ -68,6 +69,7 @@ func NewApp(configFile string) *App {
 	// add handlers
 	app.GET("/", app.index)
 	app.GET("/login", app.index)
+	app.GET("/profile", app.index)
 	app.POST("/login", app.loginPost)
 	app.GET("/logout", app.logout)
 
@@ -106,16 +108,28 @@ func (a *App) Run() {
 func (a *App) Seed() error {
 	log.Println("Creating test user")
 	err := a.db.CreateUser(&models.User{
-		Email:     "john@doe.com",
+		Email:     "a",
 		FirstName: "John",
 		LastName:  "Doe",
-		Hash:      []byte("password"),
+		Hash:      []byte("a"),
 	})
 	if err != nil {
 		return err
 	}
 	log.Println("test user successfully created")
 	return nil
+}
+
+// ErrorHandler returns HTTP response with json error message
+func ErrorHandler(w http.ResponseWriter, error string, code int) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(code)
+	errResponse := models.GetErrResponse()
+	errResponse.Msg = error
+	errResponse.Code = code
+	easyjson.MarshalToHTTPResponseWriter(errResponse, w)
+	models.RecycleErrResponse(errResponse)
 }
 
 type fileOnlyFs struct {
