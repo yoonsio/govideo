@@ -36,7 +36,8 @@ protoc --proto_path=$GOPATH/src:. --gogoslick_out=. user.proto
 
 ```
 cd ./govideo/models
-easyjson -all error.go
+easyjson response.go
+easyjson media.go
 ```
 
 ### Webpack

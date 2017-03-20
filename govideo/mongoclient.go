@@ -81,6 +81,18 @@ func (mc *MongoClient) InsertMedia(media *models.Media) error {
 	return err
 }
 
+// GetAllMedia -
+func (mc *MongoClient) GetAllMedia(email string) (*models.MediaList, error) {
+	s := mc.GetSession()
+	mediaList := models.GetMediaList()
+	err := s.DB(mc.dbName).C(colMedia).Find(bson.M{"access": bson.M{"$elemMatch": bson.M{"$exists": email}}}).All(&mediaList.Data)
+	if err != nil {
+		return nil, err
+	}
+	s.Close()
+	return mediaList, nil
+}
+
 // FindMedia -
 func (mc *MongoClient) FindMedia(path string) (*models.Media, error) {
 	s := mc.GetSession()

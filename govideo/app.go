@@ -83,7 +83,7 @@ func NewApp(configFile string) *App {
 
 	app.Handler("GET", "/curuser", app.auth.Middleware(http.HandlerFunc(app.curUser)))
 	app.Handler("GET", "/sync", app.auth.Middleware(http.HandlerFunc(app.sync)))
-	//app.Handler("GET", "/list", app.auth.Middleware(http.HandlerFunc(app.list)))
+	app.Handler("GET", "/list", app.auth.Middleware(http.HandlerFunc(app.list)))
 
 	// TODO: list returns json list of all available media
 	// in paths specified in configuration file
@@ -147,6 +147,7 @@ func (a *App) registerFile(path string, info os.FileInfo, err error) error {
 		media.Name = info.Name()
 		media.Size = info.Size()
 		media.Path = path
+		media.Access = []string{"a"}
 		media.Added = time.Now().UTC()
 		// default acl is empty list
 		a.db.InsertMedia(media)

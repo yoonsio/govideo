@@ -3,8 +3,6 @@ package models
 import (
 	"sync"
 	"time"
-
-	"gopkg.in/mgo.v2/bson"
 )
 
 // Media -
@@ -12,7 +10,7 @@ type Media struct {
 	Path   string `bson:"_id"`
 	Name   string
 	Size   int64
-	Access []bson.ObjectId
+	Access []string
 	Added  time.Time
 }
 
@@ -30,4 +28,27 @@ func GetMedia() *Media {
 // RecycleMedia puts back Media struct back into sync pool
 func RecycleMedia(media *Media) {
 	mediaPool.Put(media)
+}
+
+// MediaList -
+//easyjson:json
+type MediaList struct {
+	Data  []Media
+	Count int
+}
+
+var mediaListPool = sync.Pool{
+	New: func() interface{} {
+		return &MediaList{}
+	},
+}
+
+// GetMediaList gets MediaList struct from sync pool
+func GetMediaList() *MediaList {
+	return mediaListPool.Get().(*MediaList)
+}
+
+// RecycleMediaList puts back MediaList struct back into sync pool
+func RecycleMediaList(mediaList *MediaList) {
+	mediaListPool.Put(mediaList)
 }

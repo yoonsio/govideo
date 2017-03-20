@@ -98,22 +98,20 @@ func (a *App) sync(w http.ResponseWriter, r *http.Request) {
 // all videos are added to dbs automatically
 // this funciton just gets videos from dbs
 // everytime video is requested, it returns fake path that lasts 24 hrs
-func (a *App) list(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// walk through a.config.App.Paths
-
-	// identify media using extension
-	// TODO: identify media by inspecting headers
-
-	// get file database id
-
-	// show updateAccess if user is admin
-
-	// generate fakepath based on user ip & file db id
-
-	// returns fakepath
-
-	// TODO: export to json
-
+func (a *App) list(w http.ResponseWriter, r *http.Request) {
+	user, err := a.auth.CurUser(r)
+	if err != nil {
+		ErrorHandler(w, err.Error(), http.StatusForbidden)
+		return
+	}
+	mediaList, err := a.db.GetAllMedia(user.Email)
+	if err != nil {
+		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// remove access list before serving
+	easyjson.MarshalToHTTPResponseWriter(mediaList, w)
+	models.RecycleMediaList(mediaList)
 }
 
 // updateAccess updates access control for individual file

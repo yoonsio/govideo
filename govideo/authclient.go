@@ -110,6 +110,7 @@ func (ac *AuthClient) CurUser(r *http.Request) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	// TODO: remove hash before serving
 	return user, nil
 }
 

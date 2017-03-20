@@ -3,6 +3,7 @@ package models
 import "sync"
 
 // ErrResponse is json response message for all server errors
+//easyjson:json
 type ErrResponse struct {
 	Msg  string
 	Code int
@@ -25,6 +26,7 @@ func RecycleErrResponse(errResponse *ErrResponse) {
 }
 
 // SuccessResponse is json response message for successful execution
+//easyjson:json
 type SuccessResponse struct {
 	Msg string
 }
