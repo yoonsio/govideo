@@ -4,7 +4,7 @@ port = 9000
 
 [database]
 uri = "localhost:27017"
-dbname = "govideo"
+dbname = "gv"
 
 [cache]
 uri = "localhost:6379"
@@ -13,6 +13,6 @@ database = "0"
 
 [app]
 paths = [
-    "/Users/sickyoon/Downloads/"
+    "/Users/sickyoon/Downloads/testvideo"
 ]
 user_expiry = 86400 # one day

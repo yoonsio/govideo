@@ -2,7 +2,6 @@ package govideo
 
 import (
 	"html/template"
-	"io"
 	"net/http"
 	"os"
 	"time"
@@ -49,13 +48,13 @@ func (a *App) loginPost(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 }
 
 func (a *App) logout(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
 	err := a.auth.ClearUser(w, r)
 	if err != nil {
 		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
 	response := models.GetSuccessResponse()
 	response.Msg = "OK"
 	easyjson.MarshalToHTTPResponseWriter(response, w)
@@ -79,7 +78,61 @@ func (a *App) curUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// sync syncs database with real files for details
+func (a *App) sync(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	err := a.Sync()
+	if err != nil {
+		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	response := models.GetSuccessResponse()
+	response.Msg = "OK"
+	easyjson.MarshalToHTTPResponseWriter(response, w)
+	models.RecycleSuccessResponse(response)
+}
+
+// list returns json list of all available media
+// in paths specified in configuration file
+// all videos are added to dbs automatically
+// this funciton just gets videos from dbs
+// everytime video is requested, it returns fake path that lasts 24 hrs
+func (a *App) list(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// walk through a.config.App.Paths
+
+	// identify media using extension
+	// TODO: identify media by inspecting headers
+
+	// get file database id
+
+	// show updateAccess if user is admin
+
+	// generate fakepath based on user ip & file db id
+
+	// returns fakepath
+
+	// TODO: export to json
+
+}
+
+// updateAccess updates access control for individual file
+func (a *App) updateAccess(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// get file database id
+	// query to display access control field
+	// make sure the user has previlege (admin)
+	// update access control field with post values
+}
+
+func (a *App) view(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// render page that shows the video
+}
+
+// serveFile serves actual video content in chunk based on filepath
 func serveFile(w http.ResponseWriter, r *http.Request, filepath string) error {
+
+	// query redis with fakepath to get real path
+	// matches them against query ip
 	fi, err := os.Open(filepath)
 	if err != nil {
 		return err
@@ -87,41 +140,4 @@ func serveFile(w http.ResponseWriter, r *http.Request, filepath string) error {
 	defer fi.Close()
 	http.ServeContent(w, r, "", time.Time{}, fi)
 	return nil
-}
-
-// list returns json list of all available media
-// in paths specified in configuration file
-func (a *App) list(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// walk through a.config.App.Paths
-
-	// identify media using extension
-	// TODO: identify media by inspecting headers
-
-	// TODO: export to json
-
-}
-
-func downloadFile(filepath string, url string) error {
-	// create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// get data
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// write the body to file
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return nil
-
 }

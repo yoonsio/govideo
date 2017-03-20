@@ -43,27 +43,29 @@ func (mc *MongoClient) GetSession() *mgo.Session {
 func (mc *MongoClient) CreateUser(user *models.User) error {
 	s := mc.GetSession()
 	// TODO: indexes
-	userIndex := mgo.Index{
-		Key:        []string{"email"},
-		Unique:     true,
-		DropDups:   true,
-		Background: true,
-		Sparse:     true,
-	}
-	err := s.DB(mc.dbName).C(colUser).EnsureIndex(userIndex)
-	if err != nil {
-		return err
-	}
-	err = s.DB(mc.dbName).C(colUser).Insert(user)
+	/*
+		userIndex := mgo.Index{
+			Key:        []string{"email"},
+			Unique:     true,
+			DropDups:   true,
+			Background: true,
+			Sparse:     true,
+		}
+		err := s.DB(mc.dbName).C(colUser).EnsureIndex(userIndex)
+		if err != nil {
+			return err
+		}
+	*/
+	err := s.DB(mc.dbName).C(colUser).Insert(user)
 	s.Close()
 	return err
 }
 
 // GetUserFromDB -
-func (mc *MongoClient) GetUserFromDB(id string, hash []byte) (*models.User, error) {
+func (mc *MongoClient) GetUserFromDB(email string, hash []byte) (*models.User, error) {
 	s := mc.GetSession()
 	user := models.User{}
-	err := s.DB(mc.dbName).C(colUser).Find(bson.M{"id": id, "hash": hash}).One(&user)
+	err := s.DB(mc.dbName).C(colUser).Find(bson.M{"_id": email, "hash": hash}).One(&user)
 	if err != nil {
 		return nil, err
 	}
@@ -80,10 +82,10 @@ func (mc *MongoClient) InsertMedia(media *models.Media) error {
 }
 
 // FindMedia -
-func (mc *MongoClient) FindMedia(mediaID string) (*models.Media, error) {
+func (mc *MongoClient) FindMedia(path string) (*models.Media, error) {
 	s := mc.GetSession()
 	var media models.Media
-	err := s.DB(mc.dbName).C(colMedia).Find(mediaID).One(&media)
+	err := s.DB(mc.dbName).C(colMedia).Find(path).One(&media)
 	s.Close()
 	return &media, err
 }
@@ -92,8 +94,8 @@ func (mc *MongoClient) FindMedia(mediaID string) (*models.Media, error) {
 func (mc *MongoClient) UpdateMedia(media *models.Media) error {
 	s := mc.GetSession()
 	err := s.DB(mc.dbName).C(colMedia).Update(
-		bson.M{"_id": media.ID},
-		bson.M{"name": media.Name},
+		bson.M{"_id": media.Path},
+		media,
 	)
 	s.Close()
 	return err

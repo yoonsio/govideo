@@ -4,7 +4,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/burntsushi/toml"
 	"github.com/gorilla/handlers"
@@ -76,6 +78,7 @@ func NewApp(configFile string) *App {
 	app.POST("/login", app.loginPost)
 	app.GET("/logout", app.logout)
 
+	app.Handler("GET", "/sync", app.auth.Middleware(http.HandlerFunc(app.sync)))
 	app.Handler("GET", "/curuser", app.auth.Middleware(http.HandlerFunc(app.curUser)))
 
 	// TODO: list returns json list of all available media
@@ -120,6 +123,31 @@ func (a *App) Seed() error {
 		return err
 	}
 	log.Println("test user successfully created")
+	return nil
+}
+
+// Sync syncs database with media files
+func (a *App) Sync() error {
+	for _, path := range a.config.App.Paths {
+		err := filepath.Walk(path, a.registerFile)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *App) registerFile(path string, info os.FileInfo, err error) error {
+	if !info.IsDir() {
+		media := models.GetMedia()
+		media.Name = info.Name()
+		media.Size = info.Size()
+		media.Path = path
+		media.Added = time.Now().UTC()
+		// default acl is empty list
+		a.db.InsertMedia(media)
+		models.RecycleMedia(media)
+	}
 	return nil
 }
 
