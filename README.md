@@ -22,12 +22,20 @@ go run main.go seed
 
 ## Compilation
 
-### Generate protobuf & easyjson sources
+### Generate protobuf
+
+For `User`, add `bson: "id"` property to `Email` field for MongoDB primary key.
 
 ```
 cd ./govideo/models
 go get github.com/gogo/protobuf/protoc-gen-gogoslick
-protoc --gogoslick_out=. user.proto
+protoc --proto_path=$GOPATH/src:. --gogoslick_out=. user.proto
+```
+
+#### Generate easyjson
+
+```
+cd ./govideo/models
 easyjson -all error.go
 ```
 

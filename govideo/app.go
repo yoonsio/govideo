@@ -46,7 +46,10 @@ func NewApp(configFile string) *App {
 	}
 
 	// establish db connection
-	app.db = NewMongoClient(app.config.Database.URI, app.config.Database.DBName)
+	app.db, err = NewMongoClient(app.config.Database.URI, app.config.Database.DBName)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	// establish redis connection
 	app.cache, err = NewRedisClient(&app.config)

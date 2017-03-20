@@ -1,8 +1,6 @@
 package govideo
 
 import (
-	"log"
-
 	"github.com/sickyoon/govideo/govideo/models"
 
 	mgo "gopkg.in/mgo.v2"
@@ -23,13 +21,13 @@ type MongoClient struct {
 
 // NewMongoClient establishes connection to MongoDB database
 // and returns new MongoClient object
-func NewMongoClient(uri, dbName string) *MongoClient {
+func NewMongoClient(uri, dbName string) (*MongoClient, error) {
 	session, err := mgo.Dial(uri)
 	if err != nil {
-		log.Panic(err)
+		return nil, err
 	}
 	session.SetMode(mgo.Monotonic, true)
-	return &MongoClient{session, uri, dbName}
+	return &MongoClient{session, uri, dbName}, nil
 }
 
 // GetSession returns mgo.Session copied from
@@ -44,16 +42,28 @@ func (mc *MongoClient) GetSession() *mgo.Session {
 // CreateUser -
 func (mc *MongoClient) CreateUser(user *models.User) error {
 	s := mc.GetSession()
-	err := s.DB(mc.dbName).C(colUser).Insert(user)
+	// TODO: indexes
+	userIndex := mgo.Index{
+		Key:        []string{"email"},
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+	err := s.DB(mc.dbName).C(colUser).EnsureIndex(userIndex)
+	if err != nil {
+		return err
+	}
+	err = s.DB(mc.dbName).C(colUser).Insert(user)
 	s.Close()
 	return err
 }
 
 // GetUserFromDB -
-func (mc *MongoClient) GetUserFromDB(email string, hash []byte) (*models.User, error) {
+func (mc *MongoClient) GetUserFromDB(id string, hash []byte) (*models.User, error) {
 	s := mc.GetSession()
 	user := models.User{}
-	err := s.DB(mc.dbName).C(colUser).Find(bson.M{"email": email, "hash": hash}).One(&user)
+	err := s.DB(mc.dbName).C(colUser).Find(bson.M{"id": id, "hash": hash}).One(&user)
 	if err != nil {
 		return nil, err
 	}
