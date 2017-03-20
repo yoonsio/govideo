@@ -69,7 +69,10 @@ func NewApp(configFile string) *App {
 	}
 
 	// create auth client
-	app.auth = NewAuthClient(app.store, app.db, app.cache)
+	app.auth, err = NewAuthClient(app.store, app.db, app.cache)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	// add handlers
 	app.GET("/", app.index)
@@ -78,8 +81,9 @@ func NewApp(configFile string) *App {
 	app.POST("/login", app.loginPost)
 	app.GET("/logout", app.logout)
 
-	app.Handler("GET", "/sync", app.auth.Middleware(http.HandlerFunc(app.sync)))
 	app.Handler("GET", "/curuser", app.auth.Middleware(http.HandlerFunc(app.curUser)))
+	app.Handler("GET", "/sync", app.auth.Middleware(http.HandlerFunc(app.sync)))
+	//app.Handler("GET", "/list", app.auth.Middleware(http.HandlerFunc(app.list)))
 
 	// TODO: list returns json list of all available media
 	// in paths specified in configuration file

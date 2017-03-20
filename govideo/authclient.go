@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
+	"github.com/julienschmidt/httprouter"
 	"github.com/sickyoon/govideo/govideo/models"
 )
 
@@ -25,30 +26,58 @@ type AuthClient struct {
 }
 
 // NewAuthClient creates new AuthClient with random key
-func NewAuthClient(store *sessions.CookieStore, db *MongoClient, cache *RedisClient) *AuthClient {
+func NewAuthClient(store *sessions.CookieStore, db *MongoClient, cache *RedisClient) (*AuthClient, error) {
+	cookieKey, err := GenerateKey()
+	if err != nil {
+		return nil, err
+	}
+	sessionKey, err := GenerateKey()
+	if err != nil {
+		return nil, err
+	}
+	contextKey, err := GenerateKey()
+	if err != nil {
+		return nil, err
+	}
 	return &AuthClient{
 		CookieStore: store,
 		MongoClient: db,
 		RedisClient: cache,
 		redirectURI: "/login",
-		cookieKey:   "auth", // TODO: random-generated string key
-		sessionKey:  "user",
-		contextKey:  "auth",
-	}
+		cookieKey:   cookieKey, // TODO: random-generated string key
+		sessionKey:  sessionKey,
+		contextKey:  ContextKey(contextKey),
+	}, nil
 }
 
 // Middleware for authentication
 func (ac AuthClient) Middleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, err := ac.CurUser(r)
-		if err != nil {
-			//ac.Redirect(w, r)
-			ErrorHandler(w, err.Error(), http.StatusUnauthorized)
-			return
+		ctx := ac.authMiddleware(w, r)
+		if ctx != nil {
+			h.ServeHTTP(w, r.WithContext(ctx))
 		}
-		ctx := context.WithValue(r.Context(), ac.contextKey, user)
-		h.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// HttprouterMiddleware -
+func (ac AuthClient) HttprouterMiddleware(h httprouter.Handle) httprouter.Handle {
+	return httprouter.Handle(func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		ctx := ac.authMiddleware(w, r)
+		if ctx != nil {
+			h(w, r.WithContext(ctx), ps)
+		}
+	})
+}
+
+func (ac AuthClient) authMiddleware(w http.ResponseWriter, r *http.Request) context.Context {
+	user, err := ac.CurUser(r)
+	if err != nil {
+		ErrorHandler(w, err.Error(), http.StatusUnauthorized)
+		return nil
+	}
+	ctx := context.WithValue(r.Context(), ac.contextKey, user)
+	return ctx
 }
 
 // Redirect redirects to authenticate uri
