@@ -22,7 +22,7 @@ var seedCmd = &cobra.Command{
 		app := govideo.NewApp(config)
 		err := app.Seed()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	},
 }

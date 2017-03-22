@@ -19,7 +19,7 @@ var syncCmd = &cobra.Command{
 		app := govideo.NewApp(config)
 		err := app.Sync()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	},
 }

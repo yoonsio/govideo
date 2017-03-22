@@ -1,3 +1,4 @@
+import { handleNetworkError } from '.';
 import { setUser } from '../actions';
 
 function handleHTTPError(store) {
@@ -9,12 +10,6 @@ function handleHTTPError(store) {
       });
     }
     return response.json();
-  };
-}
-
-function handleNetworkError() {
-  return function () {
-    // handle network error
   };
 }
 

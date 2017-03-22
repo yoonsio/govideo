@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/mailru/easyjson"
+	"github.com/rakyll/magicmime"
 	"github.com/sickyoon/govideo/govideo/models"
 )
 
@@ -43,20 +44,20 @@ func NewApp(configFile string) *App {
 	// load config file if exists
 	if configFile != "" {
 		if _, err := toml.DecodeFile(configFile, &app.config); err != nil {
-			log.Panic(err)
+			log.Fatal(err)
 		}
 	}
 
 	// establish db connection
 	app.db, err = NewMongoClient(app.config.Database.URI, app.config.Database.DBName)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
 	// establish redis connection
 	app.cache, err = NewRedisClient(&app.config)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
 	// create session store
@@ -71,19 +72,20 @@ func NewApp(configFile string) *App {
 	// create auth client
 	app.auth, err = NewAuthClient(app.store, app.db, app.cache)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
 	// add handlers
 	app.GET("/", app.index)
 	app.GET("/login", app.index)
 	app.GET("/profile", app.index)
+	app.GET("/list", app.index)
 	app.POST("/login", app.loginPost)
 	app.GET("/logout", app.logout)
 
 	app.Handler("GET", "/curuser", app.auth.Middleware(http.HandlerFunc(app.curUser)))
 	app.Handler("GET", "/sync", app.auth.Middleware(http.HandlerFunc(app.sync)))
-	app.Handler("GET", "/list", app.auth.Middleware(http.HandlerFunc(app.list)))
+	app.Handler("GET", "/listMedia", app.auth.Middleware(http.HandlerFunc(app.list)))
 
 	// TODO: list returns json list of all available media
 	// in paths specified in configuration file
@@ -132,18 +134,26 @@ func (a *App) Seed() error {
 
 // Sync syncs database with media files
 func (a *App) Sync() error {
+	if err := magicmime.Open(magicmime.MAGIC_MIME_TYPE | magicmime.MAGIC_SYMLINK | magicmime.MAGIC_ERROR); err != nil {
+		return err
+	}
 	for _, path := range a.config.App.Paths {
 		err := filepath.Walk(path, a.registerFile)
 		if err != nil {
 			return err
 		}
 	}
+	magicmime.Close()
 	return nil
 }
 
 func (a *App) registerFile(path string, info os.FileInfo, err error) error {
 	if !info.IsDir() {
 		media := models.GetMedia()
+		mimeType, err := magicmime.TypeByFile(path)
+		if err == nil {
+			media.Mimetype = mimeType
+		}
 		media.Name = info.Name()
 		media.Size = info.Size()
 		media.Path = path

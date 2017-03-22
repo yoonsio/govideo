@@ -22,6 +22,15 @@ go run main.go seed
 
 ## Compilation
 
+### libmagic
+
+`libmagic` is required for mime detection.
+
+```
+sudo apt-get install libmagic // linux
+brew install libmagic // osx
+```
+
 ### Generate protobuf
 
 For `User`, add `bson: "id"` property to `Email` field for MongoDB primary key.
@@ -51,6 +60,11 @@ webpack --progress --color
 ### Security: User Session Expiry based on activity
 User session in redis can be expired based on activity.
 Set redis expiry to low value and update it whenever a request is made by the same user.
+
+### Security: Media should not return real path
+
+New struct that wraps around Media struct should be returned instead.
+Sensitive fields such as access and real path should not be visible.
 
 ## Resources
 

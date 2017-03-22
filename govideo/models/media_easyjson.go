@@ -143,13 +143,15 @@ func easyjson52202312DecodeGithubComSickyoonGovideoGovideoModels1(in *jlexer.Lex
 			continue
 		}
 		switch key {
-		case "Path":
+		case "path":
 			out.Path = string(in.String())
-		case "Name":
+		case "name":
 			out.Name = string(in.String())
-		case "Size":
+		case "mimetype":
+			out.Mimetype = string(in.String())
+		case "size":
 			out.Size = int64(in.Int64())
-		case "Access":
+		case "access":
 			if in.IsNull() {
 				in.Skip()
 				out.Access = nil
@@ -172,7 +174,7 @@ func easyjson52202312DecodeGithubComSickyoonGovideoGovideoModels1(in *jlexer.Lex
 				}
 				in.Delim(']')
 			}
-		case "Added":
+		case "added":
 			if data := in.Raw(); in.Ok() {
 				in.AddError((out.Added).UnmarshalJSON(data))
 			}
@@ -194,42 +196,50 @@ func easyjson52202312EncodeGithubComSickyoonGovideoGovideoModels1(out *jwriter.W
 		out.RawByte(',')
 	}
 	first = false
-	out.RawString("\"Path\":")
+	out.RawString("\"path\":")
 	out.String(string(in.Path))
 	if !first {
 		out.RawByte(',')
 	}
 	first = false
-	out.RawString("\"Name\":")
+	out.RawString("\"name\":")
 	out.String(string(in.Name))
 	if !first {
 		out.RawByte(',')
 	}
 	first = false
-	out.RawString("\"Size\":")
+	out.RawString("\"mimetype\":")
+	out.String(string(in.Mimetype))
+	if !first {
+		out.RawByte(',')
+	}
+	first = false
+	out.RawString("\"size\":")
 	out.Int64(int64(in.Size))
-	if !first {
-		out.RawByte(',')
-	}
-	first = false
-	out.RawString("\"Access\":")
-	if in.Access == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-		out.RawString("null")
-	} else {
-		out.RawByte('[')
-		for v5, v6 := range in.Access {
-			if v5 > 0 {
-				out.RawByte(',')
-			}
-			out.String(string(v6))
+	if len(in.Access) != 0 {
+		if !first {
+			out.RawByte(',')
 		}
-		out.RawByte(']')
+		first = false
+		out.RawString("\"access\":")
+		if in.Access == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
+			out.RawByte('[')
+			for v5, v6 := range in.Access {
+				if v5 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v6))
+			}
+			out.RawByte(']')
+		}
 	}
 	if !first {
 		out.RawByte(',')
 	}
 	first = false
-	out.RawString("\"Added\":")
+	out.RawString("\"added\":")
 	out.Raw((in.Added).MarshalJSON())
 	out.RawByte('}')
 }

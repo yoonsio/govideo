@@ -7,11 +7,12 @@ import (
 
 // Media -
 type Media struct {
-	Path   string `bson:"_id"`
-	Name   string
-	Size   int64
-	Access []string
-	Added  time.Time
+	Path     string    `json:"path",bson:"_id"`
+	Name     string    `json:"name"`
+	Mimetype string    `json:"mimetype"`
+	Size     int64     `json:"size"`
+	Access   []string  `json:"access,omitempty"`
+	Added    time.Time `json:"added"`
 }
 
 var mediaPool = sync.Pool{
