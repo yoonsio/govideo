@@ -2,9 +2,10 @@ package govideo
 
 import (
 	"html/template"
+	"log"
+	"net"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/julienschmidt/httprouter"
@@ -109,7 +110,22 @@ func (a *App) list(w http.ResponseWriter, r *http.Request) {
 		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// remove access list before serving
+	// get client ip
+	ipAddr, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// encode media path
+	for i := 0; i < len(mediaList.Data); i++ {
+		media := &mediaList.Data[i]
+		encodedPath, err := a.cache.GetEncodedPath(media.Path, ipAddr)
+		if err != nil {
+			ErrorHandler(w, err.Error(), http.StatusInternalServerError)
+		}
+		log.Println(media.Path + " -> " + encodedPath)
+		media.Path = encodedPath
+	}
 	easyjson.MarshalToHTTPResponseWriter(mediaList, w)
 	models.RecycleMediaList(mediaList)
 }
@@ -122,20 +138,38 @@ func (a *App) updateAccess(w http.ResponseWriter, r *http.Request, ps httprouter
 	// update access control field with post values
 }
 
-func (a *App) view(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// render page that shows the video
-}
+// serveFile serves actual video content in chunk based on encoded filepath
+func (a *App) serveFile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
-// serveFile serves actual video content in chunk based on filepath
-func serveFile(w http.ResponseWriter, r *http.Request, filepath string) error {
+	filepath := ps.ByName("encodedPath")
+
+	// get client ip
+	ipAddr, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// query redis with fakepath to get real path
-	// matches them against query ip
-	fi, err := os.Open(filepath)
+	realPath, err := a.cache.GetRealPath(filepath, ipAddr)
 	if err != nil {
-		return err
+		ErrorHandler(w, "Invalid encoded path", http.StatusBadRequest)
+		return
 	}
+
+	// matches them against query ip
+	info, err := os.Stat(string(realPath))
+	if err != nil {
+		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fi, err := os.Open(string(realPath))
+	if err != nil {
+		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	defer fi.Close()
-	http.ServeContent(w, r, "", time.Time{}, fi)
-	return nil
+	http.ServeContent(w, r, "", info.ModTime(), fi)
 }

@@ -80,16 +80,13 @@ func NewApp(configFile string) *App {
 	app.GET("/login", app.index)
 	app.GET("/profile", app.index)
 	app.GET("/list", app.index)
+	app.GET("/view", app.index)
 	app.POST("/login", app.loginPost)
 	app.GET("/logout", app.logout)
-
+	app.GET("/media/:encodedPath", app.auth.HttprouterMiddleware(app.serveFile))
 	app.Handler("GET", "/curuser", app.auth.Middleware(http.HandlerFunc(app.curUser)))
 	app.Handler("GET", "/sync", app.auth.Middleware(http.HandlerFunc(app.sync)))
 	app.Handler("GET", "/listMedia", app.auth.Middleware(http.HandlerFunc(app.list)))
-
-	// TODO: list returns json list of all available media
-	// in paths specified in configuration file
-	//app.GET("/list", app.list)
 
 	// add static resources handler
 	staticPath := "static"

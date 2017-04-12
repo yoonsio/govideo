@@ -89,6 +89,7 @@ func (mc *MongoClient) GetAllMedia(email string) (*models.MediaList, error) {
 	if err != nil {
 		return nil, err
 	}
+	// access list removed before serving
 	s.Close()
 	return mediaList, nil
 }

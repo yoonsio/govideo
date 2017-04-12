@@ -19,7 +19,9 @@ class ListPage extends React.Component {
   render() {
     // TODO: filter by mimetype
     const mediaList = this.state.list ? this.state.list.Data.map(media =>
-      <li key={media.name}>{media.name} {media.mimetype}</li>,
+      <li key={media.name}>
+        <a href={`media/${media.path}`}>{media.name}</a>
+      </li>,
     ) : null;
     return (
       <Content>

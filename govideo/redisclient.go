@@ -1,6 +1,7 @@
 package govideo
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -21,7 +22,7 @@ func NewRedisClient(config *models.Config) (*RedisClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &RedisClient{
+	redisClient := &RedisClient{
 		Pool: &redis.Pool{
 			MaxIdle:     3,
 			IdleTimeout: 240 * time.Second,
@@ -47,7 +48,12 @@ func NewRedisClient(config *models.Config) (*RedisClient, error) {
 		},
 		secret:     secret,
 		userExpiry: config.App.UserExpiry,
-	}, nil
+	}
+	err = redisClient.Pool.Get().Err()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to redis: %v", err)
+	}
+	return redisClient, nil
 }
 
 // SetAuthCache sets user data in redis cache
@@ -72,4 +78,25 @@ func (rc *RedisClient) ClearAuthCache(key []byte) error {
 	defer conn.Close()
 	_, err := conn.Do("DEL", key)
 	return err
+}
+
+// GetEncodedPath returns encoded path from real file path
+func (rc *RedisClient) GetEncodedPath(path, ipAddr string) (string, error) {
+	conn := rc.Get()
+	defer conn.Close()
+	encodedPath, err := GenerateKey()
+	if err != nil {
+		return "", err
+	}
+	key := []byte(rc.secret + ":encoded:" + ipAddr + ":" + encodedPath)
+	_, err = conn.Do("SETEX", key, strconv.Itoa(rc.userExpiry), path)
+	return encodedPath, err
+}
+
+// GetRealPath returns real file path from encoded path
+func (rc *RedisClient) GetRealPath(encodedPath, ipAddr string) ([]byte, error) {
+	conn := rc.Get()
+	defer conn.Close()
+	key := []byte(rc.secret + ":encoded:" + ipAddr + ":" + encodedPath)
+	return redis.Bytes(conn.Do("GET", key))
 }
