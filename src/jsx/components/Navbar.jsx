@@ -44,7 +44,7 @@ class Navbar extends React.Component {
           </div>
           <div className="collapse navbar-collapse" id="main-navbar-collapse">
             <ul className="nav navbar-nav">
-              <li><Link to="/list"><i className="fa fa-fw fa-play" /> My Library</Link></li>
+              <li><Link to="/media"><i className="fa fa-fw fa-play" /> My Library</Link></li>
               <li><Link to="/"><i className="fa fa-fw fa-gear" /> Setting</Link></li>
             </ul>
             <ul className="nav navbar-nav navbar-right">

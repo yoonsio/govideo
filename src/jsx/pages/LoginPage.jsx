@@ -16,9 +16,7 @@ class LoginPage extends React.Component {
 
   render() {
     return (
-      <Content>
         <LoginForm />
-      </Content>
     );
   }
 }

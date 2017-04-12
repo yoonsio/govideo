@@ -25,9 +25,9 @@ class ProfilePage extends React.Component {
 
   render() {
     return (
-      <Content>
+      <div>
         {this.detail()}
-      </Content>
+      </div>
     );
   }
 }

@@ -20,18 +20,16 @@ class ListPage extends React.Component {
     // TODO: filter by mimetype
     const mediaList = this.state.list ? this.state.list.Data.map(media =>
       <li key={media.name}>
-        <a href={`media/${media.path}`}>{media.name}</a>
+        <a href={`/media/${media.path}`}>{media.name}</a>
       </li>,
     ) : null;
     return (
-      <Content>
         <div>
           <h1>Media List</h1>
           <ul>
             {mediaList}
           </ul>
         </div>
-      </Content>
     );
   }
 }
