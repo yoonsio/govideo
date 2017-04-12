@@ -6,6 +6,7 @@ import (
 )
 
 // Media -
+//easyjson:json
 type Media struct {
 	Path     string    `json:"path",bson:"_id"`
 	Name     string    `json:"name"`

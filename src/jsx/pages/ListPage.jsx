@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Content } from '../components';
-import { getMediaList } from '../helpers/mediaReq';
+import { getMediaList } from '../helpers/mediaListReq';
 
 class ListPage extends React.Component {
 

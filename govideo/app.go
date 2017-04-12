@@ -84,6 +84,7 @@ func NewApp(configFile string) *App {
 	app.GET("/media/:encodedPath", app.index)
 	app.POST("/login", app.loginPost)
 	app.GET("/logout", app.logout)
+	app.GET("/media/:encodedPath/info", app.auth.HttprouterMiddleware(app.infoFile))
 	app.GET("/media/:encodedPath/data", app.auth.HttprouterMiddleware(app.serveFile))
 	app.Handler("GET", "/curuser", app.auth.Middleware(http.HandlerFunc(app.curUser)))
 	app.Handler("GET", "/sync", app.auth.Middleware(http.HandlerFunc(app.sync)))

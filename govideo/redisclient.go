@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/garyburd/redigo/redis"
+	"github.com/mailru/easyjson"
 	"github.com/sickyoon/govideo/govideo/models"
 )
 
@@ -81,7 +82,7 @@ func (rc *RedisClient) ClearAuthCache(key []byte) error {
 }
 
 // GetEncodedPath returns encoded path from real file path
-func (rc *RedisClient) GetEncodedPath(path, ipAddr string) (string, error) {
+func (rc *RedisClient) GetEncodedPath(media *models.Media, ipAddr string) (string, error) {
 	conn := rc.Get()
 	defer conn.Close()
 	encodedPath, err := GenerateKey()
@@ -89,14 +90,28 @@ func (rc *RedisClient) GetEncodedPath(path, ipAddr string) (string, error) {
 		return "", err
 	}
 	key := []byte(rc.secret + ":encoded:" + ipAddr + ":" + encodedPath)
-	_, err = conn.Do("SETEX", key, strconv.Itoa(rc.userExpiry), path)
+	mediaBytes, err := easyjson.Marshal(media)
+	if err != nil {
+		return "", err
+	}
+	_, err = conn.Do("SETEX", key, strconv.Itoa(rc.userExpiry), mediaBytes)
 	return encodedPath, err
 }
 
-// GetRealPath returns real file path from encoded path
-func (rc *RedisClient) GetRealPath(encodedPath, ipAddr string) ([]byte, error) {
+// GetMedia returns Media struct from encodedPath
+// make sure to release Media after use
+func (rc *RedisClient) GetMedia(encodedPath, ipAddr string) (*models.Media, error) {
 	conn := rc.Get()
 	defer conn.Close()
 	key := []byte(rc.secret + ":encoded:" + ipAddr + ":" + encodedPath)
-	return redis.Bytes(conn.Do("GET", key))
+	mediaBytes, err := redis.Bytes(conn.Do("GET", key))
+	if err != nil {
+		return nil, err
+	}
+	media := models.GetMedia()
+	err = easyjson.Unmarshal(mediaBytes, media)
+	if err != nil {
+		return nil, err
+	}
+	return media, nil
 }

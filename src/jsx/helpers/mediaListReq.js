@@ -1,7 +1,7 @@
 import { handleHTTPError, handleNetworkError } from '.';
 
-export const getMedia = (component, encodedPath) => {
-  const request = new Request(`/media/${encodedPath}/info`, {
+export const getMediaList = (component) => {
+  const request = new Request('/listMedia', {
     method: 'get',
     credentials: 'same-origin',
     mode: 'cors',
@@ -13,11 +13,9 @@ export const getMedia = (component, encodedPath) => {
   });
   fetch(request)
     .then(handleHTTPError())
-    .then((media) => {
-      component.setState({ 
-        media: media,
-        path: `/media/${encodedPath}/data`
-      });
+    .then((list) => {
+      component.setState({ list });
     })
     .catch(handleNetworkError);
 };
+

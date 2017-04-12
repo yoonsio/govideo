@@ -19,7 +19,7 @@ func (a *App) index(w http.ResponseWriter, r *http.Request, ps httprouter.Params
 }
 
 func (a *App) loginPost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		ErrorHandler(w, err.Error(), http.StatusBadRequest)
@@ -63,6 +63,7 @@ func (a *App) logout(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 }
 
 func (a *App) curUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	user, err := a.auth.CurUser(r)
 	if err != nil {
 		ErrorHandler(w, err.Error(), http.StatusNoContent)
@@ -100,6 +101,7 @@ func (a *App) sync(w http.ResponseWriter, r *http.Request) {
 // this funciton just gets videos from dbs
 // everytime video is requested, it returns fake path that lasts 24 hrs
 func (a *App) list(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	user, err := a.auth.CurUser(r)
 	if err != nil {
 		ErrorHandler(w, err.Error(), http.StatusForbidden)
@@ -119,7 +121,7 @@ func (a *App) list(w http.ResponseWriter, r *http.Request) {
 	// encode media path
 	for i := 0; i < len(mediaList.Data); i++ {
 		media := &mediaList.Data[i]
-		encodedPath, err := a.cache.GetEncodedPath(media.Path, ipAddr)
+		encodedPath, err := a.cache.GetEncodedPath(media, ipAddr)
 		if err != nil {
 			ErrorHandler(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -138,9 +140,8 @@ func (a *App) updateAccess(w http.ResponseWriter, r *http.Request, ps httprouter
 	// update access control field with post values
 }
 
-// serveFile serves actual video content in chunk based on encoded filepath
-func (a *App) serveFile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-
+func (a *App) infoFile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	filepath := ps.ByName("encodedPath")
 
 	// get client ip
@@ -151,20 +152,42 @@ func (a *App) serveFile(w http.ResponseWriter, r *http.Request, ps httprouter.Pa
 	}
 
 	// query redis with fakepath to get real path
-	realPath, err := a.cache.GetRealPath(filepath, ipAddr)
+	media, err := a.cache.GetMedia(filepath, ipAddr)
 	if err != nil {
 		ErrorHandler(w, "Invalid encoded path", http.StatusBadRequest)
 		return
 	}
+	easyjson.MarshalToHTTPResponseWriter(media, w)
+	models.RecycleMedia(media)
+}
 
-	// matches them against query ip
-	info, err := os.Stat(string(realPath))
+// serveFile serves actual video content in chunk based on encoded filepath
+func (a *App) serveFile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	filepath := ps.ByName("encodedPath")
+
+	// get client ip
+	ipAddr, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	fi, err := os.Open(string(realPath))
+	// query redis with fakepath to get real path
+	media, err := a.cache.GetMedia(filepath, ipAddr)
+	if err != nil {
+		ErrorHandler(w, "Invalid encoded path", http.StatusBadRequest)
+		return
+	}
+	defer models.RecycleMedia(media)
+
+	// matches them against query ip
+	info, err := os.Stat(media.Path)
+	if err != nil {
+		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fi, err := os.Open(media.Path)
 	if err != nil {
 		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
 		return

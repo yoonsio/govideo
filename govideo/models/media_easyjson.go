@@ -53,7 +53,7 @@ func easyjson52202312DecodeGithubComSickyoonGovideoGovideoModels(in *jlexer.Lexe
 				}
 				for !in.IsDelim(']') {
 					var v1 Media
-					easyjson52202312DecodeGithubComSickyoonGovideoGovideoModels1(in, &v1)
+					(v1).UnmarshalEasyJSON(in)
 					out.Data = append(out.Data, v1)
 					in.WantComma()
 				}
@@ -88,7 +88,7 @@ func easyjson52202312EncodeGithubComSickyoonGovideoGovideoModels(out *jwriter.Wr
 			if v2 > 0 {
 				out.RawByte(',')
 			}
-			easyjson52202312EncodeGithubComSickyoonGovideoGovideoModels1(out, v3)
+			(v3).MarshalEasyJSON(out)
 		}
 		out.RawByte(']')
 	}
@@ -242,4 +242,28 @@ func easyjson52202312EncodeGithubComSickyoonGovideoGovideoModels1(out *jwriter.W
 	out.RawString("\"added\":")
 	out.Raw((in.Added).MarshalJSON())
 	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v Media) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson52202312EncodeGithubComSickyoonGovideoGovideoModels1(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v Media) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson52202312EncodeGithubComSickyoonGovideoGovideoModels1(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *Media) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson52202312DecodeGithubComSickyoonGovideoGovideoModels1(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *Media) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson52202312DecodeGithubComSickyoonGovideoGovideoModels1(l, v)
 }
