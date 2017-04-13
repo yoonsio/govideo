@@ -18,6 +18,11 @@ export const getMedia = (component, encodedPath) => {
         media: media,
         path: `/media/${encodedPath}/data`
       });
+      if (media.subtitle != "") {
+        component.setState({
+          subtitle_path: `/media/${encodedPath}/subtitle`
+        });
+      }
     })
     .catch(handleNetworkError);
 };

@@ -8,12 +8,14 @@ import (
 // Media -
 //easyjson:json
 type Media struct {
-	Path     string    `json:"path",bson:"_id"`
-	Name     string    `json:"name"`
-	Mimetype string    `json:"mimetype"`
-	Size     int64     `json:"size"`
-	Access   []string  `json:"access,omitempty"`
-	Added    time.Time `json:"added"`
+	Path      string    `json:"path" bson:"_id"`
+	Subtitle  string    `json:"subtitle"`
+	Name      string    `json:"name"`
+	Mimetype  string    `json:"mimetype"`
+	Extension string    `json:"extension"`
+	Size      int64     `json:"size"`
+	Access    []string  `json:"access,omitempty"`
+	Added     time.Time `json:"added"`
 }
 
 var mediaPool = sync.Pool{

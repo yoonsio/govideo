@@ -145,10 +145,14 @@ func easyjson52202312DecodeGithubComSickyoonGovideoGovideoModels1(in *jlexer.Lex
 		switch key {
 		case "path":
 			out.Path = string(in.String())
+		case "subtitle":
+			out.Subtitle = string(in.String())
 		case "name":
 			out.Name = string(in.String())
 		case "mimetype":
 			out.Mimetype = string(in.String())
+		case "extension":
+			out.Extension = string(in.String())
 		case "size":
 			out.Size = int64(in.Int64())
 		case "access":
@@ -202,6 +206,12 @@ func easyjson52202312EncodeGithubComSickyoonGovideoGovideoModels1(out *jwriter.W
 		out.RawByte(',')
 	}
 	first = false
+	out.RawString("\"subtitle\":")
+	out.String(string(in.Subtitle))
+	if !first {
+		out.RawByte(',')
+	}
+	first = false
 	out.RawString("\"name\":")
 	out.String(string(in.Name))
 	if !first {
@@ -210,6 +220,12 @@ func easyjson52202312EncodeGithubComSickyoonGovideoGovideoModels1(out *jwriter.W
 	first = false
 	out.RawString("\"mimetype\":")
 	out.String(string(in.Mimetype))
+	if !first {
+		out.RawByte(',')
+	}
+	first = false
+	out.RawString("\"extension\":")
+	out.String(string(in.Extension))
 	if !first {
 		out.RawByte(',')
 	}

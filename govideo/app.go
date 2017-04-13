@@ -85,7 +85,8 @@ func NewApp(configFile string) *App {
 	app.POST("/login", app.loginPost)
 	app.GET("/logout", app.logout)
 	app.GET("/media/:encodedPath/info", app.auth.HttprouterMiddleware(app.infoFile))
-	app.GET("/media/:encodedPath/data", app.auth.HttprouterMiddleware(app.serveFile))
+	app.GET("/media/:encodedPath/data", app.auth.HttprouterMiddleware(app.serveFile(DATA)))
+	app.GET("/media/:encodedPath/subtitle", app.auth.HttprouterMiddleware(app.serveFile(SUBTITLE)))
 	app.Handler("GET", "/curuser", app.auth.Middleware(http.HandlerFunc(app.curUser)))
 	app.Handler("GET", "/sync", app.auth.Middleware(http.HandlerFunc(app.sync)))
 	app.Handler("GET", "/listMedia", app.auth.Middleware(http.HandlerFunc(app.list)))
@@ -139,26 +140,60 @@ func (a *App) Sync() error {
 	for _, path := range a.config.App.Paths {
 		err := filepath.Walk(path, a.registerFile)
 		if err != nil {
-			return err
+			log.Printf("failed to process %s - %v", path, err)
+			continue
 		}
 	}
 	magicmime.Close()
 	return nil
 }
 
+var videoFormats = []string{"video/mp4", "video/x-matroska", "text/plain"}
+var subtitleExt = []string{"srt", "smi"}
+
 func (a *App) registerFile(path string, info os.FileInfo, err error) error {
 	if !info.IsDir() {
-		media := models.GetMedia()
+
+		// check mimetype
 		mimeType, err := magicmime.TypeByFile(path)
-		if err == nil {
-			media.Mimetype = mimeType
+		if err != nil {
+			// failed to check mimetype!
+			log.Printf("failed to check mimetype for %s", path)
+			return nil
 		}
-		media.Name = info.Name()
+
+		// check if supported
+		if !InSlice(videoFormats, mimeType) {
+			// not supported!
+			//log.Printf("media %s with %s is not supported", path, mimeType)
+			return nil
+		}
+
+		// extract extension
+		extension := filepath.Ext(path)[1:]
+		name := info.Name()[0 : len(info.Name())-len(extension)-1]
+
+		// update existing media if found
+		if mimeType == "text/plain" && InSlice(subtitleExt, extension) {
+			// search for media with same name
+			err := a.db.UpdateSubtitle(name, path)
+			if err != nil {
+				log.Printf("failed to update subtitle for %s - %v", name, err)
+			}
+			return nil
+		}
+
+		// create new media
+		media := models.GetMedia()
+		media.Path = path
+		media.Mimetype = mimeType
+		media.Name = name
+		media.Extension = extension
 		media.Size = info.Size()
 		media.Path = path
+		// default acl is a?
 		media.Access = []string{"a"}
 		media.Added = time.Now().UTC()
-		// default acl is empty list
 		a.db.InsertMedia(media)
 		models.RecycleMedia(media)
 	}

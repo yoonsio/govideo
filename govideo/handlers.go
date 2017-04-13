@@ -2,7 +2,6 @@ package govideo
 
 import (
 	"html/template"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -11,6 +10,11 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/mailru/easyjson"
 	"github.com/sickyoon/govideo/govideo/models"
+)
+
+const (
+	DATA = iota
+	SUBTITLE
 )
 
 func (a *App) index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -125,7 +129,6 @@ func (a *App) list(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			ErrorHandler(w, err.Error(), http.StatusInternalServerError)
 		}
-		log.Println(media.Path + " -> " + encodedPath)
 		media.Path = encodedPath
 	}
 	easyjson.MarshalToHTTPResponseWriter(mediaList, w)
@@ -162,37 +165,52 @@ func (a *App) infoFile(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 }
 
 // serveFile serves actual video content in chunk based on encoded filepath
-func (a *App) serveFile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	filepath := ps.ByName("encodedPath")
+func (a *App) serveFile(dataType int) func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
-	// get client ip
-	ipAddr, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
-		return
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+		filepath := ps.ByName("encodedPath")
+
+		// get client ip
+		ipAddr, _, err := net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			ErrorHandler(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// query redis with fakepath to get real path
+		media, err := a.cache.GetMedia(filepath, ipAddr)
+		if err != nil {
+			ErrorHandler(w, "Invalid encoded path", http.StatusBadRequest)
+			return
+		}
+		defer models.RecycleMedia(media)
+
+		var path string
+		switch dataType {
+		case DATA:
+			path = media.Path
+		case SUBTITLE:
+			path = media.Subtitle
+		default:
+			ErrorHandler(w, "invalid data type", http.StatusInternalServerError)
+			return
+		}
+
+		// matches them against query ip
+		info, err := os.Stat(path)
+		if err != nil {
+			ErrorHandler(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		fi, err := os.Open(path)
+		if err != nil {
+			ErrorHandler(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		defer fi.Close()
+		http.ServeContent(w, r, "", info.ModTime(), fi)
 	}
-
-	// query redis with fakepath to get real path
-	media, err := a.cache.GetMedia(filepath, ipAddr)
-	if err != nil {
-		ErrorHandler(w, "Invalid encoded path", http.StatusBadRequest)
-		return
-	}
-	defer models.RecycleMedia(media)
-
-	// matches them against query ip
-	info, err := os.Stat(media.Path)
-	if err != nil {
-		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	fi, err := os.Open(media.Path)
-	if err != nil {
-		ErrorHandler(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	defer fi.Close()
-	http.ServeContent(w, r, "", info.ModTime(), fi)
 }

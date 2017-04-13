@@ -16,11 +16,28 @@ class ListPage extends React.Component {
     getMediaList(this);
   }
 
+  mediaEntry = (media) => {
+    if (media.subtitle != "") {
+      return (
+        <a href={`/media/${media.path}`}>
+          {media.name}
+          <i className="fa fa-fw fa-language" />
+        </a>
+      );
+    } else {
+      return (
+        <a href={`/media/${media.path}`}>
+          {media.name} 
+        </a>
+      );
+    }
+  }
+
   render() {
     // TODO: filter by mimetype
     const mediaList = this.state.list ? this.state.list.Data.map(media =>
       <li key={media.name}>
-        <a href={`/media/${media.path}`}>{media.name}</a>
+        {this.mediaEntry(media)}
       </li>,
     ) : null;
     return (

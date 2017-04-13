@@ -95,12 +95,24 @@ func (mc *MongoClient) GetAllMedia(email string) (*models.MediaList, error) {
 }
 
 // FindMedia -
+// recycle media after use
 func (mc *MongoClient) FindMedia(path string) (*models.Media, error) {
 	s := mc.GetSession()
-	var media models.Media
-	err := s.DB(mc.dbName).C(colMedia).Find(path).One(&media)
+	media := models.GetMedia()
+	err := s.DB(mc.dbName).C(colMedia).Find(path).One(media)
 	s.Close()
-	return &media, err
+	return media, err
+}
+
+// UpdateSubtitle -
+func (mc *MongoClient) UpdateSubtitle(name, path string) error {
+	s := mc.GetSession()
+	err := s.DB(mc.dbName).C(colMedia).Update(
+		bson.M{"name": name},
+		bson.M{"$set": bson.M{"subtitle": path}},
+	)
+	s.Close()
+	return err
 }
 
 // UpdateMedia -
