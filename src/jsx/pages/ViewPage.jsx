@@ -26,19 +26,26 @@ class ViewPage extends React.Component {
         }
         let subtitleComponent = null;
         if (this.state.subtitle) {
-            subtitleComponent = <track kind="captions" label="English captions" src={this.state.subtitle} srclang="en" default />;
+            subtitleComponent = <track kind="captions" label="English" srclang="en" src={this.state.subtitle} default />
         }
         return (
-            <video controls>
-                <source src={this.state.path} type={this.state.media.mimetype} />
-                {subtitleComponent}
-            </video>
+            <div className="embed-responsive embed-responsive-16by9">
+                <video controls crossOrigin>
+                    <source src={this.state.path} type={this.state.media.mimetype} />
+                    {subtitleComponent}
+                </video>
+            </div>
         );    
     }
 
     render() {
+        let info = null;
+        if (this.state.media) {
+            info = <h3>{this.state.media.name}</h3>
+        }
         return (
-            <div>
+            <div className="col-md-12">
+                {info}
                 {this.videoComponent()}
             </div>
         )

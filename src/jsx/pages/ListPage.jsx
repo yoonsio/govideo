@@ -16,36 +16,38 @@ class ListPage extends React.Component {
     getMediaList(this);
   }
 
-  mediaEntry = (media) => {
+  subtitleComponent = (media) => {
     if (media.subtitle != "") {
       return (
-        <a href={`/media/${media.path}`}>
-          {media.name}
-          <i className="fa fa-fw fa-language" />
-        </a>
+        <span className="badge"><i className="fa fa-fw fa-language" /></span>
       );
     } else {
       return (
-        <a href={`/media/${media.path}`}>
-          {media.name} 
-        </a>
+        <span />
       );
     }
   }
 
   render() {
+    // styles
+    const col1Style = {width: "100px"};
+    const col2Style = {width: "100px"};
+
+
     // TODO: filter by mimetype
     const mediaList = this.state.list ? this.state.list.Data.map(media =>
-      <li key={media.name}>
-        {this.mediaEntry(media)}
-      </li>,
+      <a href={`/media/${media.path}`} className="list-group-item" key={media.name}>
+        <h4 class="list-group-item-heading">{media.name} {this.subtitleComponent(media)}</h4>
+        
+        <p class="list-group-item-text">{media.mimetype}</p>
+      </a>,
     ) : null;
     return (
-        <div>
+        <div className="col-md-12">
           <h1>Media List</h1>
-          <ul>
+          <div className="list-group">
             {mediaList}
-          </ul>
+          </div>
         </div>
     );
   }

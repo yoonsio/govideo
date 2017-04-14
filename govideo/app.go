@@ -149,7 +149,7 @@ func (a *App) Sync() error {
 }
 
 var videoFormats = []string{"video/mp4", "video/x-matroska", "text/plain"}
-var subtitleExt = []string{"srt", "smi"}
+var subtitleExt = []string{"vtt"}
 
 func (a *App) registerFile(path string, info os.FileInfo, err error) error {
 	if !info.IsDir() {

@@ -4,8 +4,10 @@ import Navbar from './Navbar';
 const Content = ({ children }) => (
   <div>
     <Navbar />
-    <div className="main container-fluid">
-      {children}
+    <div className="main container">
+      <div className="row">
+        {children}
+      </div>
     </div>
   </div>
 );
