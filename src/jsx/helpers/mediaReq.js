@@ -20,7 +20,7 @@ export const getMedia = (component, encodedPath) => {
       });
       if (media.subtitle != "") {
         component.setState({
-          subtitle_path: `/media/${encodedPath}/subtitle`
+          subtitle: `/media/${encodedPath}/subtitle`
         });
       }
     })

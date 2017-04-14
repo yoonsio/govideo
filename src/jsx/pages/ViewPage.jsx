@@ -10,45 +10,36 @@ class ViewPage extends React.Component {
         this.state = {
             media: null,
             path: null,
-            subtitle_path: null,
-        }
+            subtitle: null
+        };
     }
 
     componentWillMount() {
         getMedia(this, this.props.params.path);
     }
 
-    translateType = () => {
-        switch (this.state.media.mimetype) {
-            case "video/x-matroska":
-                return "video/webm";
-            default:
-                return type;
-        }
-    }
-
-    subtitleComponent = () => {
-        if (this.state.subtitle_path) {
+    videoComponent = () => {
+        if (this.state.media == null) {
             return (
-                <track kind="captions" label="English captions" src="/path/to/captions.vtt" srclang="en" default />
-            );
+                <h2>Loading media...</h2>
+            );    
         }
-        return (<div />);
-    }
-    
-    render() {
-        let fixedWidth = {
-            width: "600px"
-        };
-        let videoComponent;
-        if (this.state.media != null) {
-            videoComponent = <video controls><source src={this.state.path} type={this.state.media.mimetype} />{subtitleComponent()}</video>
-        } else {
-            videoComponent = <h2>Loading media...</h2>
+        let subtitleComponent = null;
+        if (this.state.subtitle) {
+            subtitleComponent = <track kind="captions" label="English captions" src={this.state.subtitle} srclang="en" default />;
         }
         return (
-            <div style={fixedWidth}>
-                {this.state.media}
+            <video controls>
+                <source src={this.state.path} type={this.state.media.mimetype} />
+                {subtitleComponent}
+            </video>
+        );    
+    }
+
+    render() {
+        return (
+            <div>
+                {this.videoComponent()}
             </div>
         )
     }
