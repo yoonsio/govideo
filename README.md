@@ -8,6 +8,12 @@ Fast open-source video streaming server written in Go
 * access control
 * speed limiter
 
+## Sync / Indexing
+
+Media files are recursively added from target directories without category.<br>
+Categories can be added in the future via web interface.<br>
+Subtitle files must have same name as media files.
+
 ## Run Instruction
 
 ### Run Web Server

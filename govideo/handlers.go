@@ -143,6 +143,11 @@ func (a *App) updateAccess(w http.ResponseWriter, r *http.Request, ps httprouter
 	// update access control field with post values
 }
 
+// updateCategory updates category for individual file
+func (a *App) updateCategory(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+}
+
 func (a *App) infoFile(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	filepath := ps.ByName("encodedPath")

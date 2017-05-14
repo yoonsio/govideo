@@ -9,6 +9,7 @@ import (
 //easyjson:json
 type Media struct {
 	Path      string    `json:"path" bson:"_id"`
+	Category  string    `json:"category"`
 	Subtitle  string    `json:"subtitle"`
 	Name      string    `json:"name"`
 	Mimetype  string    `json:"mimetype"`

@@ -133,11 +133,21 @@ func (a *App) Seed() error {
 }
 
 // Sync syncs database with media files
+// media files are added uncategorized by default
 func (a *App) Sync() error {
 	if err := magicmime.Open(magicmime.MAGIC_MIME_TYPE | magicmime.MAGIC_SYMLINK | magicmime.MAGIC_ERROR); err != nil {
 		return err
 	}
+	// check path is valid
 	for _, path := range a.config.App.Paths {
+		if _, err := os.Stat(path); err != nil {
+			if os.IsNotExist(err) {
+				log.Fatalf("ERROR - Media path %s is not valid\n", path)
+			}
+		}
+	}
+	for _, path := range a.config.App.Paths {
+		log.Printf("walking through %s for media files\n", path)
 		err := filepath.Walk(path, a.registerFile)
 		if err != nil {
 			log.Printf("failed to process %s - %v", path, err)
@@ -157,14 +167,12 @@ func (a *App) registerFile(path string, info os.FileInfo, err error) error {
 		// check mimetype
 		mimeType, err := magicmime.TypeByFile(path)
 		if err != nil {
-			// failed to check mimetype!
 			log.Printf("failed to check mimetype for %s", path)
 			return nil
 		}
 
 		// check if supported
 		if !InSlice(videoFormats, mimeType) {
-			// not supported!
 			//log.Printf("media %s with %s is not supported", path, mimeType)
 			return nil
 		}
@@ -184,6 +192,7 @@ func (a *App) registerFile(path string, info os.FileInfo, err error) error {
 		}
 
 		// create new media
+		log.Printf("registering media %s ...", path)
 		media := models.GetMedia()
 		media.Path = path
 		media.Mimetype = mimeType
@@ -191,11 +200,14 @@ func (a *App) registerFile(path string, info os.FileInfo, err error) error {
 		media.Extension = extension
 		media.Size = info.Size()
 		media.Path = path
-		// default acl is a?
+		// TODO: default acl is a?
 		media.Access = []string{"a"}
 		media.Added = time.Now().UTC()
-		a.db.InsertMedia(media)
+		err = a.db.InsertMedia(media)
 		models.RecycleMedia(media)
+		if err != nil {
+			log.Printf("ERROR - failed to register media %s", path)
+		}
 	}
 	return nil
 }

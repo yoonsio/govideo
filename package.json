@@ -4,6 +4,10 @@
   "description": "Video Streaming Server in Go",
   "main": "index.js",
   "scripts": {
+    "build": "webpack --color --progress",
+    "watch": "webpack --color --progress --watch",
+    "dev": "npm run watch | go run main.go run",
+    "run": "npm run build && go run main.go run",
     "test": "go test"
   },
   "repository": {

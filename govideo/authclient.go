@@ -174,7 +174,6 @@ func (ac *AuthClient) setSession(w http.ResponseWriter, r *http.Request, user []
 		log.Println("FATAL: Should ALWAYS return new session in case of failure")
 		return err
 	}
-	log.Println("got session")
 	session.Values[ac.sessionKey] = user
 	return session.Save(r, w)
 }

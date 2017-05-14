@@ -13,6 +13,6 @@ database = "0"
 
 [app]
 paths = [
-    "/Users/sickyoon/Downloads/testvideo"
+    "/Users/sickyoon/Movies"
 ]
 user_expiry = 86400 # one day

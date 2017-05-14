@@ -30,7 +30,7 @@ class ViewPage extends React.Component {
         }
         return (
             <div className="embed-responsive embed-responsive-16by9">
-                <video controls crossOrigin>
+                <video controls>
                     <source src={this.state.path} type={this.state.media.mimetype} />
                     {subtitleComponent}
                 </video>

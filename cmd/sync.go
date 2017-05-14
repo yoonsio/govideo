@@ -14,6 +14,7 @@ var syncCmd = &cobra.Command{
 	Short: "Sync Database with Media Files",
 	Long:  `Sync Database with Media Files`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// TODO: provide option to nuke db
 		log.Println("Sync started...")
 		config := viper.GetString("config")
 		app := govideo.NewApp(config)
